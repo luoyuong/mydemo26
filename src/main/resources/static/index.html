@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>文本处理工具</title>
+    <style>
+        textarea { width: 100%; height: 200px; margin-bottom: 10px; }
+        button { margin-right: 10px; }
+        #result { margin-top: 10px; white-space: pre-wrap; border: 1px solid #ccc; padding: 10px; }
+    </style>
+</head>
+<body>
+<h2>文本处理工具</h2>
+<textarea id="input"></textarea><br>
+<button onclick="count()">统计字符数</button>
+<button onclick="removeEmpty()">去空行</button>
+<button onclick="removeDuplicate()">去重行</button>
+<button onclick="formatJSON()">JSON格式化</button>
+<div id="result"></div>
+
+<script>
+    const resultDiv = document.getElementById("result");
+    const input = document.getElementById("input");
+
+    function post(url, data) {
+        return fetch(url, {
+            method: "POST",
+            headers: { "Content-Type": "text/plain" },
+            body: data
+        }).then(res => res.text());
+    }
+
+    function count() {
+        post("/text/count", input.value).then(res => resultDiv.innerText = "字符数：" + res);
+    }
+
+    function removeEmpty() {
+        post("/text/remove-empty", input.value).then(res => resultDiv.innerText = res);
+    }
+
+    function removeDuplicate() {
+        post("/text/remove-duplicate", input.value).then(res => resultDiv.innerText = res);
+    }
+
+    function formatJSON() {
+        post("/json/format", input.value).then(res => resultDiv.innerText = res);
+    }
+</script>
+</body>
+</html>
