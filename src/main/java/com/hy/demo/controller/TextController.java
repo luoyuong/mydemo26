@@ -22,6 +22,9 @@ public class TextController {
         String result = text.trim();
         result = result.replaceAll("(?m)^\\s*$\\n","");
 
+        // 去除空白字符
+        result = result.replace(" ","");
+
         return result;
     }
 
