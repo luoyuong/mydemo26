@@ -34,6 +34,7 @@ public class TextController {
         String[] lines = text.split("\\r?\\n");
         Set<String> set = new LinkedHashSet<>();
         for (String line : lines) {
+            line = line.trim();
             if (StringUtils.isEmpty(line)){
                 continue;
             }

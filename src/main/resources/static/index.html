@@ -10,40 +10,85 @@
     </style>
 </head>
 <body>
-<h2>文本处理工具</h2>
+<h2>在线文本处理工具</h2>
+<p>支持文本统计、去重、JSON格式化</p>
 <textarea id="input"></textarea><br>
 <button onclick="count()">统计字符数</button>
 <button onclick="removeEmpty()">去空行</button>
 <button onclick="removeDuplicate()">去重行</button>
 <button onclick="formatJSON()">JSON格式化</button>
+
+<p id="message" style="color:green"> </p>
 <div id="result"></div>
 
 <script>
     const resultDiv = document.getElementById("result");
     const input = document.getElementById("input");
+    const message = document.getElementById("message");
 
     function post(url, data) {
         return fetch(url, {
             method: "POST",
             headers: { "Content-Type": "text/plain" },
             body: data
-        }).then(res => res.text());
+        }).then(
+            response => {
+                if (!response.ok){
+                    throw new Error("HTTP错误:"+response.status)
+                }
+                return response.text();
+            }
+        );
+    }
+
+    function handleRequest(url,successCallback){
+        if (!input.value.trim()){
+            message.style.color = "red";
+            message.innerText = "请输入内容!"
+            return;
+        }
+
+        post(url,input.value)
+            .then(res => {
+                message.style.color = "black";
+                message.innerText = "处理中...";
+                successCallback(res);
+                message.style.color = "green";
+                message.innerText = "处理成功！"
+            }).catch(err => {
+               resultDiv.innerText = "";
+               message.style.color = "red";
+               message.innerText = err.message || "处理失败！"
+            });
+
+
     }
 
     function count() {
-        post("/text/count", input.value).then(res => resultDiv.innerText = "字符数：" + res);
+        handleRequest("/text/count",res => {
+            resultDiv.innerText = "字符数：" + res;
+        })
     }
 
     function removeEmpty() {
-        post("/text/remove-empty", input.value).then(res => resultDiv.innerText = res);
+        handleRequest("/text/remove-empty",res => {
+            resultDiv.innerText = res
+        })
     }
 
     function removeDuplicate() {
-        post("/text/remove-duplicate", input.value).then(res => resultDiv.innerText = res);
+        handleRequest("/text/remove-duplicate",res => {
+            resultDiv.innerText = res
+        })
     }
 
     function formatJSON() {
-        post("/json/format", input.value).then(res => resultDiv.innerText = res);
+        handleRequest("/json/format",res => {
+            if (res.includes("JSON格式错误")){
+                throw new Error(res);
+            }
+            resultDiv.innerText = res
+        })
     }
 </script>
 </body>
