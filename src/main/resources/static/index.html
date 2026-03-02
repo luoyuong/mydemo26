@@ -19,7 +19,12 @@
 <button onclick="formatJSON()">JSON格式化</button>
 <button onclick="cleanAi()">AI提取重点</button>
 <button onclick="toSql()">生成SQL</button>
-<input id="tableName" placeholder="请输入表名"/>
+<input id="tableName" placeholder="请输入表名"/><br/>
+<input type="file" id="file">
+<button onclick="upload()">上传生成sql</button>
+<input id="sqlTableName" placeholder="请输入表名"/><br/>
+<p>字段映射（格式：姓名:name,年龄:age）</p>
+<input id="mapping" style="width:100%" />
 <p id="message" style="color:green"> </p>
 <div id="result"></div>
 
@@ -113,7 +118,47 @@
         })
 
     }
-    
+
+    function upload(){
+        const file = document.getElementById("file").files[0];
+        message.innerText = ""
+        if (!file){
+            message.style.color = "red";
+            message.innerText = "请传入文件!"
+            return;
+        }
+
+        const mapping = document.getElementById("mapping").value;
+        const formData = new FormData();
+        formData.append("file",file);
+        const tablename = document.getElementById("sqlTableName").value;
+        formData.append("mapping",mapping);
+
+        if (!tablename){
+            message.style.color = "red";
+            message.innerText = "请输入表名!"
+            return;
+        }
+
+
+        fetch("/excel/sql?tablename="+tablename,{
+            method: "POST",
+            body : formData
+        }).then(res => {
+            console.log(res);
+            return res.text();
+        })
+          .then(res => {
+              resultDiv.innerText = res;
+              message.style.color = "green";
+              message.innerText = "生成成功!"
+          })
+          .catch(err => {
+              message.innerText = "上传失败";
+          })
+
+    }
+
 </script>
 </body>
 </html>
