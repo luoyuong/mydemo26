@@ -17,7 +17,9 @@
 <button onclick="removeEmpty()">去空行</button>
 <button onclick="removeDuplicate()">去重行</button>
 <button onclick="formatJSON()">JSON格式化</button>
-
+<button onclick="cleanAi()">AI提取重点</button>
+<button onclick="toSql()">生成SQL</button>
+<input id="tableName" placeholder="请输入表名"/>
 <p id="message" style="color:green"> </p>
 <div id="result"></div>
 
@@ -90,6 +92,28 @@
             resultDiv.innerText = res
         })
     }
+    
+    function cleanAi() {
+        handleRequest("/ai/clean",res => {
+            resultDiv.innerText = res;
+        })
+
+    }
+
+    function toSql(){
+        const table = document.getElementById("tableName").value;
+        if (!table.trim()){
+            message.style.color = "red";
+            message.innerText = "请输入表名!"
+            return;
+        }
+
+        handleRequest("/excel/to-sql?tablename="+table,res => {
+            resultDiv.innerText = res;
+        })
+
+    }
+    
 </script>
 </body>
 </html>
