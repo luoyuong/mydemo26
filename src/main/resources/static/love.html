@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>动态爱心页面</title>
+    <style>
+        /* 全局样式重置 */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        /* 页面背景 */
+        body {
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            overflow: hidden;
+        }
+
+        /* 爱心容器 */
+        .heart-container {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* 爱心形状核心样式 */
+        .heart {
+            width: 150px;
+            height: 150px;
+            background: linear-gradient(45deg, #ff6b6b, #ff8e8e);
+            position: relative;
+            transform: rotate(45deg);
+            animation: heartbeat 1.5s ease-in-out infinite;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 30px rgba(255, 107, 107, 0.3);
+        }
+
+        /* 爱心的左右圆弧部分 */
+        .heart::before,
+        .heart::after {
+            content: '';
+            width: 150px;
+            height: 150px;
+            background: inherit;
+            border-radius: 50%;
+            position: absolute;
+        }
+
+        .heart::before {
+            top: -75px;
+            left: 0;
+        }
+
+        .heart::after {
+            top: 0;
+            left: -75px;
+        }
+
+        /* 心跳动画 */
+        @keyframes heartbeat {
+            0% {
+                transform: rotate(45deg) scale(1);
+            }
+            15% {
+                transform: rotate(45deg) scale(1.1);
+            }
+            30% {
+                transform: rotate(45deg) scale(1);
+            }
+            45% {
+                transform: rotate(45deg) scale(1.1);
+            }
+            60% {
+                transform: rotate(45deg) scale(1);
+            }
+        }
+
+        /* 鼠标悬浮效果 */
+        .heart:hover {
+            background: linear-gradient(45deg, #ff4757, #ff6348);
+            box-shadow: 0 15px 40px rgba(255, 71, 87, 0.5);
+        }
+
+        /* 装饰性文字 */
+        .text {
+            color: white;
+            font-family: 'Arial', sans-serif;
+            font-size: 20px;
+            margin-top: 50px;
+            text-align: center;
+            letter-spacing: 2px;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+            animation: fadeIn 3s ease-in-out;
+        }
+
+        /* 文字渐入动画 */
+        @keyframes fadeIn {
+            0% {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* 响应式适配 */
+        @media (max-width: 768px) {
+            .heart {
+                width: 100px;
+                height: 100px;
+            }
+
+            .heart::before,
+            .heart::after {
+                width: 100px;
+                height: 100px;
+            }
+
+            .heart::before {
+                top: -50px;
+            }
+
+            .heart::after {
+                left: -50px;
+            }
+
+            .text {
+                font-size: 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="heart-container">
+    <div class="heart"></div>
+    <div class="text">爱你哦 宝宝~ ❤️</div>
+</div>
+
+<script>
+    // 可选：添加点击爱心的交互效果
+    const heart = document.querySelector('.heart');
+    const text = document.querySelector('.text');
+
+    // 点击爱心时更换文字
+    heart.addEventListener('click', () => {
+        const texts = [
+            '爱你哦 宝宝~ ❤️',
+            '最爱我的宝宝啦~ 💖',
+            '要和宝宝一直一直在一起哦~ 💘',
+            '璨璨 💓'
+        ];
+        // 随机选择文字
+        const randomText = texts[Math.floor(Math.random() * texts.length)];
+        text.textContent = randomText;
+
+        // 点击时的缩放效果
+        heart.style.transform = 'rotate(45deg) scale(1.2)';
+        setTimeout(() => {
+            heart.style.transform = 'rotate(45deg) scale(1)';
+        }, 200);
+    });
+</script>
+</body>
+</html>

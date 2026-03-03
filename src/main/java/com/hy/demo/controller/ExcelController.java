@@ -2,6 +2,7 @@ package com.hy.demo.controller;
 
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.springframework.http.ResponseEntity;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -9,6 +10,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -52,14 +54,25 @@ public class ExcelController {
 
 
     @PostMapping(value = "/sql",produces = "text/plain;charset=UTF-8")
-    public String excelToSql(@RequestParam("file") MultipartFile file,@RequestParam("tablename") String tablename,@RequestParam("mapping") String mapping) throws Exception {
+    public ResponseEntity<byte[]> excelToSql(@RequestParam("file") MultipartFile file, @RequestParam("tablename") String tablename, @RequestParam("mapping") String mapping) throws Exception {
         if (file.isEmpty()) {
-            return "文件不能为空";
+            return ResponseEntity.badRequest().body("文件不能为空".getBytes(StandardCharsets.UTF_8));
         }
         if (tablename.isEmpty()){
-            return "表名不能为空";
+            return ResponseEntity.badRequest().body("表名不能为空".getBytes(StandardCharsets.UTF_8));
         }
 
+        String sql = generateSql(file, mapping, tablename);
+        byte[] data = sql.getBytes(StandardCharsets.UTF_8);
+
+
+        return ResponseEntity.ok()
+                .header("Content-Disposition","attachment; filename=data.sql")
+                .header("Content-Type","application/octet-stream")
+                .body(data);
+    }
+
+    private String generateSql(MultipartFile file,String mapping,String tablename) throws IOException {
         StringBuilder sb = new StringBuilder();
         Workbook wb = new XSSFWorkbook(file.getInputStream());
         Sheet sheet = wb.getSheetAt(0);

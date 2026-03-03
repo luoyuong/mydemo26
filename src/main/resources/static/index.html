@@ -134,11 +134,6 @@
         const tablename = document.getElementById("sqlTableName").value;
         formData.append("mapping",mapping);
 
-        if (!tablename){
-            message.style.color = "red";
-            message.innerText = "请输入表名!"
-            return;
-        }
 
 
         fetch("/excel/sql?tablename="+tablename,{
@@ -146,15 +141,28 @@
             body : formData
         }).then(res => {
             console.log(res);
-            return res.text();
+            if(!res.ok){
+                return res.text().then(text => {
+                    throw new Error(text);
+                });
+            }else {
+                return res.blob();
+            }
         })
-          .then(res => {
-              resultDiv.innerText = res;
+          .then(blob => {
+              const urlCreator = window.URL || window.webkitURL;
+              const url = urlCreator.createObjectURL(blob);
+              const a = document.createElement("a");
+              a.href = url;
+              a.download = "data.sql";
+              a.click();
+              urlCreator.revokeObjectURL(url);
+              message.innerText = "下载成功";
               message.style.color = "green";
-              message.innerText = "生成成功!"
           })
           .catch(err => {
-              message.innerText = "上传失败";
+              message.style.color = "red";
+              message.innerText = err.message;
           })
 
     }
