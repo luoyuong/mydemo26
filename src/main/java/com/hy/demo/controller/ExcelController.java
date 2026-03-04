@@ -11,10 +11,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @RestController
 @RequestMapping("/excel")
@@ -62,8 +59,13 @@ public class ExcelController {
             return ResponseEntity.badRequest().body("表名不能为空".getBytes(StandardCharsets.UTF_8));
         }
 
+        StringBuilder result = new StringBuilder();
+        String create = generateCreateSql(file, mapping, tablename);
+
         String sql = generateSql(file, mapping, tablename);
-        byte[] data = sql.getBytes(StandardCharsets.UTF_8);
+        result.append(create).append("\n").append(sql);
+
+        byte[] data = result.toString().getBytes(StandardCharsets.UTF_8);
 
 
         return ResponseEntity.ok()
@@ -71,6 +73,70 @@ public class ExcelController {
                 .header("Content-Type","application/octet-stream")
                 .body(data);
     }
+
+    private String generateCreateSql(MultipartFile file, String mapping, String tablename) throws Exception {
+        StringBuilder sb = new StringBuilder();
+        Workbook wb = new XSSFWorkbook(file.getInputStream());
+        Sheet sheet = wb.getSheetAt(0);
+        Map<String, String> map = parseMapping(mapping);
+
+        sb.append("CREATE TABLE ").append(tablename).append(" (").append("\n");
+
+        Row headRow = sheet.getRow(0);
+        List<String> columns = new ArrayList<>();
+        for (Cell cell : headRow) {
+            String cellValue = getCellValue(cell);
+            columns.add(map.getOrDefault(cellValue,cellValue));
+        }
+
+        int cellNum = headRow.getLastCellNum();
+
+        for (int i = 0; i < cellNum; i++) {
+            List<String> columnValues = new ArrayList<>();
+            for (int j = 1; j <= sheet.getLastRowNum(); j++) {
+                Cell cell = sheet.getRow(j).getCell(i);
+                String cellValue = getCellValue(cell);
+                columnValues.add(cellValue);
+            }
+            String type = detectType(columnValues);
+            sb.append("    ").append(columns.get(i)).append(" ").append(type);
+
+            if (i != cellNum - 1){
+                sb.append(",");
+            }
+            sb.append("\n");
+        }
+
+        sb.append(");\n");
+
+        return sb.toString().trim();
+    }
+
+    private String detectType(List<String> columnValues){
+        boolean hasDecimal = false;
+        boolean allNumber = true;
+        for(String columnValue : columnValues){
+            if (columnValue == null || columnValue.isEmpty()){
+                continue;
+            }
+            if (!columnValue.matches("-?\\d+(\\.\\d+)?")){
+                allNumber = false;
+                break;
+            }
+            if (columnValue.contains(".")){
+                hasDecimal = true;
+            }
+        }
+
+        if (!allNumber){
+            return "VARCHAR(255)";
+        }
+        if (hasDecimal){
+            return "DECIMAL(10,2)";
+        }
+        return "INT";
+    }
+
 
     private String generateSql(MultipartFile file,String mapping,String tablename) throws IOException {
         StringBuilder sb = new StringBuilder();
@@ -141,7 +207,7 @@ public class ExcelController {
             case STRING:
                 return cell.getStringCellValue().trim();
             case NUMERIC:
-                return String.valueOf((int) cell.getNumericCellValue());
+                return String.valueOf(cell.getNumericCellValue());
             case BOOLEAN:
                 return String.valueOf(cell.getBooleanCellValue());
             case BLANK:
